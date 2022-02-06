@@ -2,6 +2,7 @@ import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 import {
   parse as parseCsv,
 } from "https://deno.land/std@0.125.0/encoding/csv.ts";
+import { post } from "https://deno.land/x/dishooks@v1.0.0/mod.ts";
 
 const env = config();
 const csvText = await fetch(env.DATA_SOURCE).then((r) => r.text());
@@ -9,36 +10,36 @@ const csv = await parseCsv(csvText);
 
 const height = csv[csv.length - 1];
 
-let content;
+let title;
 
 if (Number.parseInt(height[1]) > Number.parseInt(env.MAX_HEIGHT)) {
-  content = `We cannot row, the height is ${height[1]}m as of ${
-    new Date(height[0]).toLocaleString(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-    })
-  }`;
+  title = "Down to the rowing room!";
 } else {
-  content = `We can row, the height is ${height[1]}m as of ${
-    new Date(height[0]).toLocaleString(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-    })
-  }`;
+  title = "To the river!";
 }
 
-await fetch(env.WEBHOOK_URL, {
-  method: "POST",
-  body: JSON.stringify({
-    content: content,
-  }),
-  headers: {
-    "Content-Type": "application/json",
-  },
+await post(env.WEBHOOK_URL, {
+  embeds: [
+    {
+      title: title,
+      fields: [
+        {
+          name: "Height",
+          value: `${height[1]}m`,
+          inline: true,
+        },
+        {
+          name: "Date",
+          value: new Date(height[0]).toLocaleString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+          }),
+          inline: true,
+        },
+      ],
+    },
+  ],
 });
