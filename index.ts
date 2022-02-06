@@ -33,7 +33,7 @@ if (Number.parseInt(height[1]) > Number.parseInt(env.MAX_HEIGHT)) {
   }`;
 }
 
-const req = await fetch(env.WEBHOOK_URL, {
+await fetch(env.WEBHOOK_URL, {
   method: "POST",
   body: JSON.stringify({
     content: content,
